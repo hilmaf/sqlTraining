@@ -418,3 +418,137 @@ SELECT '123' + '456' FROM DUAL; -- ÀÚµ¿À¸·Î ¼ýÀÚ Å¸ÀÔÀ¸·Î Çüº¯È¯ µÚ ¿¬»êÃ³¸®¸¦ Ç
 SELECT '123' + '456A' FROM DUAL; -- ¿¡·¯ ¹ß»ý(¼ýÀÚ ÇüÅÂÀÇ ¹®ÀÚµé¸¸ ÀÚµ¿Çüº¯È¯ µÈ´Ù.)
 SELECT '10,000,000' + '500,000' FROM DUAL; -- ¿¡·¯ ¹ß»ý
 SELECT TO_NUMBER('10,000,000', '99,999,999') + TO_NUMBER('500,000', '999,999') FROM DUAL;
+
+
+-- NULL Ã³¸® ÇÔ¼ö
+/*
+    1) NVL
+        [¹®¹ý]
+        - NVL(ÄÃ·³, ÄÃ·³°ªÀÌ NULLÀÏ °æ¿ì ¹ÝÈ¯ÇÒ °ª)
+        
+        - NULL·Î µÇ¾îÀÖ´Â ÄÃ·³ÀÇ °ªÀ» ÀÎÀÚ·Î ÁöÁ¤ÇÑ °ªÀ¸·Î º¯°æÇÏ¿© ¹ÝÈ¯ÇÑ´Ù.
+        
+    2) NVL2
+        [¹®¹ý]
+        - NVL2(ÄÃ·³, º¯°æÇÒ °ª 1, º¯°æÇÒ °ª 2)
+            
+        - ÄÃ·³ °ªÀÌ NULLÀÌ ¾Æ´Ï¸é º¯°æÇÒ °ª 1, ÄÃ·³ °ªÀÌ NULLÀÌ¸é º¯°æÇÒ °ª 2·Î º¯°æÇÏ¿© ¹ÝÈ¯ÇÑ´Ù.  
+    
+    3) NULLIF
+        [¹®¹ý]
+        - NULLIF(ºñ±³´ë»ó 1, ºñ±³´ë»ó 2)
+            
+        - µÎ °³ÀÇ °ªÀÌ µ¿ÀÏÇÏ¸é NULL ¹ÝÈ¯, µÎ °³ÀÇ °ªÀÌ µ¿ÀÏÇÏÁö ¾ÊÀ¸¸é ºñ±³´ë»ó 1À» ¹ÝÈ¯ÇÑ´Ù.
+*/
+
+-- EMPLOYEE Å×ÀÌºí¿¡¼­ »ç¿ø¸í, º¸³Ê½º, º¸³Ê½º°¡ Æ÷ÇÔµÈ ¿¬ºÀ Á¶È¸
+SELECT EMP_NAME »ç¿ø¸í
+    , BONUS º¸³Ê½º
+    , SALARY*12 + SALARY*NVL(BONUS, 0) "º¸³Ê½º°¡ Æ÷ÇÔµÈ ¿¬ºÀ"
+FROM EMPLOYEE;
+-- EMPLOYEE Å×ÀÌºí¿¡¼­ »ç¿ø¸í, ºÎ¼­ ÄÚµå Á¶È¸
+SELECT EMP_NAME »ç¿ø¸í
+    , NVL(DEPT_CODE, 'ºÎ¼­¾øÀ½') "ºÎ¼­ ÄÚµå"
+FROM EMPLOYEE;
+-- º¸³Ê½º ÀÏ°ýÀû¿ë ÇÏ¿© »ç¿øÀÌ¸§, º¸³Ê½º, ¿¬ºÀ Á¶È¸(º¸³Ê½º ÀÖ´Â »ç¶÷µéÀº ¹«Á¶°Ç 10%·Î Àû¿ë, ¾øÀ¸¸é ¾ÈÁÜ)
+SELECT EMP_NAME »ç¿ø¸í
+    , BONUS º¸³Ê½º
+    , SALARY*12 + SALARY*NVL2(BONUS, 0.1, 0) ¿¬ºÀ
+FROM EMPLOYEE;
+
+SELECT NULLIF('123', '123') FROM DUAL;
+SELECT NULLIF('123', '456') FROM DUAL;
+
+SELECT NULLIF(123, 123) FROM DUAL;
+SELECT NULLIF(123, 456) FROM DUAL;
+
+/*
+    <¼±ÅÃÇÔ¼ö>
+        ¿©·¯ °¡Áö °æ¿ì¿¡ ¼±ÅÃÀ» ÇÒ ¼ö ÀÖ´Â ±â´ÉÀ» Á¦°øÇÏ´Â ÇÔ¼öÀÌ´Ù.
+    
+    1) DECODE
+        [¹®¹ý]
+            DECODE(Ä®·³|°è»ê½Ä, Á¶°Ç°ª 1, °á°ú°ª 1, Á¶°Ç°ª 2, °á°ú°ª 2, ..., °á°ú°ª)
+        
+        - ºñ±³ÇÏ°íÀÚ ÇÏ´Â °ªÀÌ Á¶°Ç°ª°ú ÀÏÄ¡ÇÒ °æ¿ì ±×¿¡ ÇØ´çÇÏ´Â °á°ú°ªÀ» ¹ÝÈ¯ÇØ ÁÖ´Â ÇÔ¼öÀÌ´Ù.
+*/
+
+-- »ç¿ø ÀÌ¸§, ÁÖ¹Î¹øÈ£, ¼ºº° Á¶È¸
+SELECT EMP_NAME »ç¿ø¸í
+    , EMP_NO ÁÖ¹Î¹øÈ£
+    , DECODE(SUBSTR(EMP_NO, 8, 1), 2, '¿©ÀÚ', 1, '³²ÀÚ') ¼ºº°
+FROM EMPLOYEE;
+
+/*
+    2) CASE
+        [¹®¹ý]
+            CASE WHEN Á¶°Ç½Ä 1 THEN °á°ú°ª 1
+                 WHEN Á¶°Ç½Ä 2 THEN °á°ú°ª 2
+                 ...
+                 ELSE °á°ú°ª N
+            END
+*/
+-- »ç¿ø ÀÌ¸§, ÁÖ¹Î¹øÈ£, ¼ºº° Á¶È¸
+SELECT EMP_NAME
+    , EMP_NO
+    , CASE 
+        WHEN SUBSTR(EMP_NO, 8, 1)=2 THEN '¿©ÀÚ'
+        WHEN SUBSTR(EMP_NO, 8, 1)=1 THEN '³²ÀÚ'
+        ELSE '2000³â´ë»ýÀÌ°Å³ª ¿Ü±¹ÀÎÀÔ´Ï´Ù'
+        END ¼ºº°
+FROM EMPLOYEE;
+
+/*
+    <±×·ì ÇÔ¼ö>
+        ´ë·®ÀÇ µ¥ÀÌÅÍµé·Î Áý°è³ª Åë°è °°Àº ÀÛ¾÷À» Ã³¸®ÇØ¾ß ÇÏ´Â °æ¿ì »ç¿ëµÇ´Â ÇÔ¼öµéÀÌ´Ù.
+        ¸ðµç ±×·ì ÇÔ¼ö´Â NULL °ªÀ» ÀÚµ¿À¸·Î Á¦¿ÜÇÏ°í °ªÀÌ ÀÖ´Â °Íµé¸¸ °è»êÀ» ÇÑ´Ù.
+        µû¶ó¼­ AVG ÇÔ¼ö¸¦ »ç¿ëÇÒ ¶§´Â ¹Ýµå½Ã NVL() ÇÔ¼ö¿Í ÇÔ²² »ç¿ëÇÏ´Â °ÍÀ» ±ÇÀåÇÑ´Ù.
+        
+        1) SUM
+            [¹®¹ý]
+                SUM(NUMBER)
+                
+            - ÇØ´ç Ä®·³ °ªµéÀÇ ÃÑ ÇÕ°è¸¦ ¹ÝÈ¯ÇÑ´Ù.
+            
+         2) AVG
+            [¹®¹ý]
+                AVG(NUMBER)
+            
+            - ÇØ´ç ÄÃ·³ °ªµéÀÇ Æò±ÕÀ» ±¸ÇØ¼­ ¹ÝÈ¯ÇÑ´Ù.
+        
+         3) MIN / MAX
+            [¹®¹ý]
+                MIN/MAX(¸ðµç Å¸ÀÔ ÄÃ·³)
+            
+            - MIN : ÇØ´ç ÄÃ·³ °ªµé Áß¿¡ °¡Àå ÀÛÀº °ªÀ» ¹ÝÈ¯ÇÑ´Ù.
+            - MAX : ÇØ´ç ÄÃ·³ °ªµé Áß¿¡ °¡Àå Å« °ªÀ» ¹ÝÈ¯ÇÑ´Ù.
+            
+         4) COUNT
+            [¹®¹ý]
+                COUNT(*|ÄÃ·³¸í|DISTINCT ÄÃ·³¸í)
+            
+            - ÄÃ·³ ¶Ç´Â ÇàÀÇ °³¼ö¸¦ ¼¼¼­ ¹ÝÈ¯ÇÏ´Â ÇÔ¼öÀÌ´Ù.
+            - COUNT(*) : Á¶È¸ °á°ú¿¡ ÇØ´çÇÏ´Â ¸ðµç ÇàÀÇ °³¼ö¸¦ ¹ÝÈ¯ÇÑ´Ù.
+            - COUNT(ÄÃ·³¸í) : Á¦½ÃÇÑ ÄÃ·³ °ªÀÌ NULLÀÌ ¾Æ´Ñ ÇàÀÇ °³¼ö¸¦ ¹ÝÈ¯ÇÑ´Ù.
+            - COUNT(DISTINCT ÄÃ·³¸í) ÇØ´ç ÄÃ·³ °ªÀÇ Áßº¹À» Á¦°ÅÇÑ ÇàÀÇ °³¼ö¸¦ ¹ÝÈ¯ÇÑ´Ù. 
+*/
+
+-- ¸ðµç »ç¿ø ¿ù±Þ ÇÕ°è
+SELECT SUM(SALARY)
+FROM EMPLOYEE;
+-- SELECT EMP_NAME, SUM(SALARY) : ¿À·ù (ÀÌÀ¯: »ç¿ø¸í ÄÃ·³°ú ÇÕ°è ÄÃ·³ÀÇ Çà °³¼ö°¡ ´Ù¸§)
+-- °á°úÁýÇÕ(RESULT SET)Àº ¹«Á¶°Ç »ç°¢Çü ÇüÅÂ¿©¾ß ÇÔ
+
+-- ¸ðµç »ç¿øÀÇ ¿ù±Þ Æò±Õ
+SELECT AVG(SALARY)
+FROM EMPLOYEE;
+
+SELECT MAX(SALARY), MIN(SALARY), SUM(SALARY), AVG(SALARY)
+FROM EMPLOYEE;
+
+-- ¿ù±Þ COUNT
+SELECT COUNT(SALARY)
+FROM EMPLOYEE;
+
+SELECT AVG(BONUS)
+FROM EMPLOYEE; -- NULL °ª: ¾Æ¿¹ Ãë±ÞÇÏÁö ¾Ê°í Ã³¸®ÇÔ
